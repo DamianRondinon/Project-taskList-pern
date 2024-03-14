@@ -1,5 +1,5 @@
 // Login construction
-import { Router } from "express";
+import Router  from "express-promise-router";
 import { createTask, deleteTask, getAllTasks, getTask, updateTask } from "../controllers/tasks.controller.js";
 
 const router = Router();
