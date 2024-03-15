@@ -1,12 +1,15 @@
 import { pool } from "../db.js";
 
 export const getAllTasks = async (req, res, next) => {
-  const result = await pool.query("SELECT * FROM task1");
+  const result = await pool.query("SELECT * FROM task");
   console.log(result);
   return res.json(result.rows);
 };
 
-export const getTask = (req, res) => res.send("Getting single task");
+export const getTask = async (req, res) => {
+  const result = await pool.query("SELECT * FROM task WHERE id = $1", [req.params.id]);
+  return res.json(result.rows[0]);
+};
 
 export const createTask = async (req, res, next) => {
   // I take the user's data.
@@ -24,7 +27,9 @@ export const createTask = async (req, res, next) => {
     res.json(result.rows[0]);
   } catch (error) {
     if (error.code == "23505") {
-      return res.send("taks already exists");
+      return res.status(409).json({
+        message: "A task with that title already exists.",
+      });
     }
     next(error);
   }
