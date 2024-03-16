@@ -7,7 +7,14 @@ export const getAllTasks = async (req, res, next) => {
 };
 
 export const getTask = async (req, res) => {
-  const result = await pool.query("SELECT * FROM task WHERE id = $1", [req.params.id]);
+  const result = await pool.query("SELECT * FROM task WHERE id = $1", [
+    req.params.id,
+  ]);
+  if (result.rowCount === 0) {
+    return res.status(404).json({
+      message: "There is no task with that ID.",
+    });
+  }
   return res.json(result.rows[0]);
 };
 
@@ -35,6 +42,34 @@ export const createTask = async (req, res, next) => {
   }
 };
 
-export const updateTask = (req, res) => res.send("Updating single task");
+export const updateTask = async (req, res) => {
+  const id = req.params.id;
+  const { title, description } = req.body;
 
-export const deleteTask = (req, res) => res.send("Deleting task");
+  const result = await pool.query(
+    "UPDATE task SET title = $1, description = $2 WHERE id = $3 RETURNING *",
+    [title, description, id]
+  );
+
+  if (result.rowCount === 0) {
+    return res.status(404).json({
+      message: "There is no message with that ID",
+    });
+  }
+
+  return res.json(result.rows[0]);
+};
+
+export const deleteTask = async (req, res) => {
+  const result = await pool.query("DELETE FROM task WHERE id = $1", [
+    req.params.id,
+  ]);
+
+  if (result.rowCount === 0) {
+    return res.status(404).json({
+      message: "There is no task with that ID",
+    });
+  }
+  // The system is functioning, but it is not returning any tasks
+  return res.sendStatus(204);
+};
